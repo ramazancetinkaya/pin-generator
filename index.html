@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>myp1n — Secure PIN Generator</title>
+  <!-- Google Fonts: Inter for UI, JetBrains Mono for secure digits -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* CSS RESET */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :root {
+      --bg-primary: #f8fafc;        /* Slate 50 */
+      --card-bg: #ffffff;
+      --text-main: #0f172a;        /* Matte Slate 900 */
+      --text-muted: #475569;       /* Slate 600 */
+      --text-light: #94a3b8;       /* Slate 400 */
+      --border-color: #e2e8f0;     /* Slate 200 */
+      --border-focus: #0f172a;
+      --accent-black: #0f172a;     /* Material Matte Black */
+      --accent-slate: #1e293b;     /* Slate 800 */
+      --accent-hover: #334155;     /* Slate 700 */
+      --accent-light: #f1f5f9;     /* Slate 100 */
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-subtle: 0 4px 6px -1px rgba(15, 23, 42, 0.03), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+      --shadow-card: 0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    /* SCROLLBAR HIDER UTILITY */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none; /* Chrome, Safari and Opera */
+    }
+
+    /* MAIN CONTAINER SETUP (PERFECT CENTERING) */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .generator-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%;
+      box-shadow: var(--shadow-card);
+      transition: var(--transition-smooth);
+    }
+
+    /* TYPOGRAPHIC IDENTITY LOGO & INFO BUTTON */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      color: var(--text-main);
+      user-select: none;
+    }
+
+    .brand span {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .info-trigger-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .info-trigger-btn:hover {
+      background-color: var(--accent-light);
+      color: var(--text-main);
+    }
+
+    /* PIN DISPLAY CONTAINER */
+    .pin-viewport {
+      position: relative;
+      background-color: var(--accent-light);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    .pin-viewport:active {
+      cursor: grabbing;
+    }
+
+    /* MONOSPACED PIN TYPOGRAPHY (NO BOXES) */
+    .pin-scroll-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      scroll-behavior: smooth;
+    }
+
+    /* When pin overflows, align left to make scrolling logical */
+    .pin-scroll-wrapper.overflowing {
+      justify-content: flex-start;
+    }
+
+    #pin-display {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text-main);
+      border: none;
+      background: transparent;
+      outline: none;
+      text-align: center;
+      width: 100%;
+      pointer-events: none; /* Prevent selection and focus visual breakups */
+      user-select: none;
+    }
+
+    /* LENGTH SEGMENT SELECTOR */
+    .control-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .length-selector {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      background-color: var(--accent-light);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    .length-btn {
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 8px 0;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: var(--transition-smooth);
+      text-align: center;
+    }
+
+    .length-btn:hover {
+      color: var(--text-main);
+      background-color: rgba(15, 23, 42, 0.03);
+    }
+
+    .length-btn.active {
+      background-color: var(--accent-black);
+      color: var(--card-bg);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    /* MAIN GENERATE & ACTION ROW */
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .generate-btn {
+      flex: 1;
+      background-color: var(--accent-black);
+      color: var(--card-bg);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 14px 24px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .generate-btn:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .copy-btn {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      border-radius: var(--radius-sm);
+      width: 52px;
+      height: 52px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .copy-btn:hover {
+      background-color: var(--accent-light);
+      border-color: var(--text-muted);
+    }
+
+    /* ACTIVE BACKGROUND FILTERS SUMMARY AREA */
+    .filters-summary-container {
+      border-top: 1px dashed var(--border-color);
+      padding-top: 16px;
+    }
+
+    .filters-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .filters-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+    }
+
+    .filter-badge {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background-color: var(--accent-light);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    /* FOOTER REGION */
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 16px 0;
+      font-size: 0.75rem;
+      color: var(--text-light);
+      user-select: none;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+    }
+
+    footer a:hover {
+      color: var(--text-main);
+      text-decoration: underline;
+    }
+
+    /* MODAL POPUPS */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 24px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-card);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.active .modal-container {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-body {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .modal-body p {
+      margin-bottom: 12px;
+    }
+
+    .modal-close-btn {
+      width: 100%;
+      background-color: var(--accent-black);
+      color: var(--card-bg);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-close-btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    /* CUSTOM TOAST NOTIFICATIONS */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1010;
+      pointer-events: none;
+    }
+
+    .toast {
+      background-color: var(--accent-black);
+      color: var(--card-bg);
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(-20px);
+      opacity: 0;
+      pointer-events: auto;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ANIMATIONS */
+    @keyframes pulse-shimmer {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .shuffling {
+      animation: pulse-shimmer 0.15s infinite alternate;
+    }
+
+    .pin-pop {
+      animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.92); }
+      100% { transform: scale(1); }
+    }
+
+    /* RESPONSIVE DESIGN ADJUSTMENTS */
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+      }
+      .generator-card {
+        padding: 24px;
+      }
+      #pin-display {
+        font-size: 1.85rem;
+      }
+      .length-selector {
+        gap: 4px;
+      }
+      .length-btn {
+        font-size: 0.75rem;
+        padding: 6px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MAIN WRAPPER FOR HORIZONTAL AND VERTICAL VIEWPORT CENTERING -->
+  <main>
+    <div class="generator-card">
+      
+      <!-- LOGO / BRANDING & METADATA TRIGGER -->
+      <div class="header">
+        <h1 class="brand">myp1n</h1>
+        <button class="info-trigger-btn" id="info-btn" aria-label="Privacy Information">
+          <i class="fa-solid fa-circle-info"></i>
+        </button>
+      </div>
+
+      <!-- MAIN SCROLLABLE PIN DISPLAY WINDOW -->
+      <div class="pin-viewport" id="pin-viewport">
+        <div class="pin-scroll-wrapper no-scrollbar" id="pin-scroll-container">
+          <!-- Styled read-only text input to facilitate touch drag/selection scroll mechanism -->
+          <input type="text" id="pin-display" readonly value="------" aria-label="Generated PIN text">
+        </div>
+      </div>
+
+      <!-- PIN LENGTH CONTROLLER -->
+      <label class="control-label">Select Digit Length</label>
+      <div class="length-selector" role="radiogroup" aria-label="PIN digit length">
+        <button class="length-btn" data-length="4">4</button>
+        <button class="length-btn active" data-length="6">6</button>
+        <button class="length-btn" data-length="8">8</button>
+        <button class="length-btn" data-length="10">10</button>
+        <button class="length-btn" data-length="12">12</button>
+        <button class="length-btn" data-length="14">14</button>
+        <button class="length-btn" data-length="16">16</button>
+      </div>
+
+      <!-- INTERACT BUTTON BLOCK -->
+      <div class="action-row">
+        <button class="generate-btn" id="generate-btn">
+          <span>Generate PIN</span>
+        </button>
+        <button class="copy-btn" id="copy-btn" title="Copy PIN" aria-label="Copy PIN">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+      </div>
+
+      <!-- ACTIVE SECURITY FILTERS HUD DISPLAY (NO ICONS) -->
+      <div class="filters-summary-container">
+        <div class="filters-title">Active Filters</div>
+        <div class="filters-list" id="filters-container">
+          <!-- Rendered dynamically depending on length selector -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- POPUP PRIVACY OVERLAY (CUSTOM MODAL) -->
+  <div class="modal-overlay" id="privacy-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 class="modal-title">Privacy & Security Information</h2>
+      </div>
+      <div class="modal-body">
+        <p>This generator operates completely client-side in your browser. All algorithms run locally on your physical device using your browser's secure crypto library API.</p>
+        <p>No PIN combinations or data inputs are compiled, sent, or saved online. They are purged instantly from your system's active runtime memory upon closing this browser window.</p>
+      </div>
+      <button class="modal-close-btn" id="modal-close-btn">Close Info</button>
+    </div>
+  </div>
+
+  <!-- CONTAINER FOR CUSTOM TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toast-wrapper"></div>
+
+  <!-- COPYRIGHT REQUISITE FOOTER -->
+  <footer>
+    &copy; 2026 myp1n. Developed by <a href="https://github.com/ramazancetinkaya" target="_blank" rel="noopener noreferrer">ramazancetinkaya</a>.
+  </footer>
+
+  <!-- CORE SCRIPT IMPLEMENTING THE CRYPTO API AND SECURITY FILTERS -->
+  <script>
+    // State controller state variables
+    let currentLength = 6;
+    let isAnimating = false;
+
+    // Dom Cache
+    const pinDisplay = document.getElementById('pin-display');
+    const pinScrollContainer = document.getElementById('pin-scroll-container');
+    const pinViewport = document.getElementById('pin-viewport');
+    const lengthButtons = document.querySelectorAll('.length-btn');
+    const generateBtn = document.getElementById('generate-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const filtersContainer = document.getElementById('filters-container');
+    const infoBtn = document.getElementById('info-btn');
+    const privacyModal = document.getElementById('privacy-modal');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const toastWrapper = document.getElementById('toast-wrapper');
+
+    // High Resistance PIN Security Rule definitions
+    const filterDefinitions = {
+      global: [
+        { id: "cs_rng", name: "Entropy Stream (CS-RNG)" },
+        { id: "no_consec", name: "No Direct Repeaters" },
+        { id: "no_linear", name: "Anti-Line Linear Run" }
+      ],
+      strict4: [
+        { id: "strict_seq", name: "No Adjacent Pairs (Math Gap)" },
+        { id: "all_unique", name: "No Duplicate Digits" },
+        { id: "known_leak", name: "Known Compromise Check" }
+      ],
+      strictOther: [
+        { id: "freq_limit", name: "Strict Frequency Limits" },
+        { id: "pattern_rep", name: "Multi-pattern Alternators" }
+      ]
+    };
+
+    // --------------------------------------------------------
+    // CRYPTOGRAPHIC GENERATION UTILITIES
+    // --------------------------------------------------------
+    
+    // Generates mathematically secure single random digit using the secure Crypto API
+    function secureRandomDigit() {
+      const buffer = new Uint32Array(1);
+      window.crypto.getRandomValues(buffer);
+      return buffer[0] % 10;
+    }
+
+    // Modern Fisher-Yates element shuffling powered directly by Crypto API
+    function cryptoShuffle(array) {
+      const buffer = new Uint32Array(array.length);
+      window.crypto.getRandomValues(buffer);
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = buffer[i] % (i + 1);
+        const temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+      return array;
+    }
+
+    // --------------------------------------------------------
+    // SECURITY ALGORITHM VALIDATION & REGEX LAYERS
+    // --------------------------------------------------------
+
+    // Standard checking against repeating numbers next to each other
+    function hasConsecutiveDuplicates(pin) {
+      for (let i = 0; i < pin.length - 1; i++) {
+        if (pin[i] === pin[i + 1]) return true;
+      }
+      return false;
+    }
+
+    // Prevents mathematical sequences like 1234 or 9876
+    function isLinearSequence(pin) {
+      let asc = true;
+      let desc = true;
+      for (let i = 0; i < pin.length - 1; i++) {
+        const val = parseInt(pin[i], 10);
+        const nextVal = parseInt(pin[i + 1], 10);
+        if (nextVal !== val + 1) asc = false;
+        if (nextVal !== val - 1) desc = false;
+      }
+      return asc || desc;
+    }
+
+    // Limits repetitive counts of any digit (E.g. maximum of 3 occurrences of '4' inside a longer string)
+    function violatesFrequencyLimit(pin) {
+      const counts = {};
+      for (let char of pin) {
+        counts[char] = (counts[char] || 0) + 1;
+      }
+      // Max permitted threshold is around 25-30% of total length depending on pin sizes
+      const maxPermitted = Math.max(2, Math.floor(pin.length * 0.3));
+      return Object.values(counts).some(count => count > maxPermitted);
+    }
+
+    // Rejects common repetitive sequences like "1212", "090909"
+    function hasPatternAlternation(pin) {
+      if (pin.length < 4) return false;
+      // Rejects pattern groups repeating e.g. "abab" or "abcabc"
+      if (pin.length % 2 === 0) {
+        const half = pin.length / 2;
+        if (pin.slice(0, half) === pin.slice(half)) return true;
+      }
+      if (pin.length % 4 === 0) {
+        const quad = pin.length / 4;
+        if (pin.slice(0, quad).repeat(4) === pin) return true;
+      }
+      // Rejects alternating sets
+      let alternating = true;
+      for (let i = 2; i < pin.length; i++) {
+        if (pin[i] !== pin[i - 2]) {
+          alternating = false;
+          break;
+        }
+      }
+      return alternating;
+    }
+
+    // Extra strict rules specifically for 4-digit PINs (since they have a much lower entropy space)
+    function checkStrict4DigitFilters(pin) {
+      // 1. Check if it contains repeating digits (require all digits unique)
+      const uniqueDigits = new Set(pin);
+      if (uniqueDigits.size !== 4) return true;
+
+      // 2. Reject tight distance gaps (no numbers separated by +/- 1 right next to each other)
+      for (let i = 0; i < pin.length - 1; i++) {
+        const gap = Math.abs(parseInt(pin[i], 10) - parseInt(pin[i + 1], 10));
+        if (gap === 1) return true;
+      }
+
+      // 3. Blacklist of historically known leaked/frequent 4-digit PIN patterns
+      const darklist = [
+        "1234", "1111", "0000", "1212", "7777", "2000", "2001", "2002", "2020", "2024", "2026", "2580",
+        "4321", "9999", "5555", "6666", "2222", "3333", "8888", "4444", "6969", "1314", "1004"
+      ];
+      if (darklist.includes(pin)) return true;
+
+      return false;
+    }
+
+    // Main Engine Validator: Generates and evaluates PIN validity through the filter matrix
+    function generateSecurePIN(length) {
+      let attempts = 0;
+      const MAX_ATTEMPTS_LIMIT = 5000;
+
+      while (attempts < MAX_ATTEMPTS_LIMIT) {
+        attempts++;
+        let rawDigits = [];
+        
+        // Assemble numbers
+        for (let i = 0; i < length; i++) {
+          rawDigits.push(secureRandomDigit());
+        }
+
+        // Apply a secondary crypto-grade shuffle to disrupt sequential generation anomalies
+        rawDigits = cryptoShuffle(rawDigits);
+        const pinCandidate = rawDigits.join('');
+
+        // Apply Standard Base Filters
+        if (hasConsecutiveDuplicates(pinCandidate)) continue;
+        if (isLinearSequence(pinCandidate)) continue;
+
+        // Route based on dynamic target requirements
+        if (length === 4) {
+          if (checkStrict4DigitFilters(pinCandidate)) continue;
+        } else {
+          // Custom algorithms for 6 digits and greater
+          if (violatesFrequencyLimit(pinCandidate)) continue;
+          if (hasPatternAlternation(pinCandidate)) continue;
+        }
+
+        // Secure PIN matches all algorithm filters
+        return pinCandidate;
+      }
+
+      // Safe fallback if loop hits bounds (extremely rare anomaly due to high mathematical space)
+      let fallbackDigits = [];
+      for (let i = 0; i < length; i++) {
+        fallbackDigits.push(secureRandomDigit());
+      }
+      return cryptoShuffle(fallbackDigits).join('');
+    }
+
+    // --------------------------------------------------------
+    // UI CONTROL ENGINE
+    // --------------------------------------------------------
+
+    // Redraw and update the security system readout list (Active Filters UI)
+    function updateActiveFiltersUI() {
+      filtersContainer.innerHTML = '';
+      
+      // Load standard rules active globally
+      filterDefinitions.global.forEach(filter => {
+        const badge = document.createElement('span');
+        badge.className = 'filter-badge';
+        badge.textContent = filter.name;
+        filtersContainer.appendChild(badge);
+      });
+
+      // Load specific rules dependent on active configuration size
+      if (currentLength === 4) {
+        filterDefinitions.strict4.forEach(filter => {
+          const badge = document.createElement('span');
+          badge.className = 'filter-badge';
+          badge.textContent = filter.name;
+          filtersContainer.appendChild(badge);
+        });
+      } else {
+        filterDefinitions.strictOther.forEach(filter => {
+          const badge = document.createElement('span');
+          badge.className = 'filter-badge';
+          badge.textContent = filter.name;
+          filtersContainer.appendChild(badge);
+        });
+      }
+    }
+
+    // Triggers the tactical shuffle and verifies output
+    function startPINGeneration() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      // Lock buttons during generation shuffle window
+      generateBtn.disabled = true;
+      copyBtn.disabled = true;
+      pinDisplay.classList.add('shuffling');
+
+      const finalPIN = generateSecurePIN(currentLength);
+      const animationSpeed = 40; // ms
+      const animationDuration = 480; // ms
+      let elapsed = 0;
+
+      // Creates the digital rolling shuffle cycle visual effect
+      const animationInterval = setInterval(() => {
+        let tempPIN = "";
+        for (let i = 0; i < currentLength; i++) {
+          tempPIN += Math.floor(Math.random() * 10);
+        }
+        pinDisplay.value = tempPIN;
+        checkPINOverflow();
+        elapsed += animationSpeed;
+
+        if (elapsed >= animationDuration) {
+          clearInterval(animationInterval);
+          
+          // Complete shuffle, print clean output and scale animate
+          pinDisplay.value = finalPIN;
+          pinDisplay.classList.remove('shuffling');
+          pinDisplay.classList.add('pin-pop');
+          
+          setTimeout(() => {
+            pinDisplay.classList.remove('pin-pop');
+          }, 300);
+
+          // Restore normal interactions
+          generateBtn.disabled = false;
+          copyBtn.disabled = false;
+          isAnimating = false;
+          checkPINOverflow();
+        }
+      }, animationSpeed);
+    }
+
+    // Copies PIN content to clipboard using fallback structures for sandbox compatibility
+    function copyPINToClipboard() {
+      if (isAnimating) return;
+      const targetValue = pinDisplay.value;
+      if (!targetValue || targetValue.includes('-')) return;
+
+      // Safe DOM extraction mechanism
+      const dummyInput = document.createElement('textarea');
+      dummyInput.value = targetValue;
+      document.body.appendChild(dummyInput);
+      dummyInput.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast("PIN Copied to Clipboard");
+      } catch (err) {
+        showToast("Error copying content. Write manually.");
+      }
+      
+      document.body.removeChild(dummyInput);
+    }
+
+    // Displays feedback notifications utilizing custom HTML templates (no alerts)
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+      toastWrapper.appendChild(toast);
+
+      // Trigger frame transition entry
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 50);
+
+      // Gracefully clear out element
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }, 2500);
+    }
+
+    // Modal Display Handling
+    function openModal() {
+      privacyModal.classList.add('active');
+    }
+
+    function closeModal() {
+      privacyModal.classList.remove('active');
+    }
+
+    // --------------------------------------------------------
+    // HORIZONTAL OVERFLOW SCROLL NAVIGATION & TACTILE SWIPING
+    // --------------------------------------------------------
+
+    // Monitors character bounds and structures alignment adjustments
+    function checkPINOverflow() {
+      const isOverflowing = pinScrollContainer.scrollWidth > pinScrollContainer.clientWidth;
+      if (isOverflowing) {
+        pinScrollContainer.classList.add('overflowing');
+      } else {
+        pinScrollContainer.classList.remove('overflowing');
+      }
+    }
+
+    // Listens to classic keys 'A' / 'D' / 'Arrows' to trigger smooth horizontal shifting inside container
+    window.addEventListener('keydown', (e) => {
+      if (isAnimating) return;
+      
+      const scrollStep = 45;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        pinScrollContainer.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        pinScrollContainer.scrollBy({ left: scrollStep, behavior: 'smooth' });
+      }
+    });
+
+    // Touch gesture dragging & standard pointer drag actions across the display box
+    let activeDrag = false;
+    let startLocationX;
+    let originalScrollOffset;
+
+    pinViewport.addEventListener('mousedown', (e) => {
+      activeDrag = true;
+      startLocationX = e.pageX - pinViewport.offsetLeft;
+      originalScrollOffset = pinScrollContainer.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+      activeDrag = false;
+    });
+
+    window.addEventListener('mouseleave', () => {
+      activeDrag = false;
+    });
+
+    pinViewport.addEventListener('mousemove', (e) => {
+      if (!activeDrag) return;
+      e.preventDefault();
+      const currentX = e.pageX - pinViewport.offsetLeft;
+      const dragDistance = (currentX - startLocationX) * 1.5;
+      pinScrollContainer.scrollLeft = originalScrollOffset - dragDistance;
+    });
+
+    // Touch Support Mobile mapping
+    pinViewport.addEventListener('touchstart', (e) => {
+      activeDrag = true;
+      startLocationX = e.touches[0].pageX - pinViewport.offsetLeft;
+      originalScrollOffset = pinScrollContainer.scrollLeft;
+    });
+
+    pinViewport.addEventListener('touchend', () => {
+      activeDrag = false;
+    });
+
+    pinViewport.addEventListener('touchmove', (e) => {
+      if (!activeDrag) return;
+      const currentX = e.touches[0].pageX - pinViewport.offsetLeft;
+      const dragDistance = (currentX - startLocationX) * 1.5;
+      pinScrollContainer.scrollLeft = originalScrollOffset - dragDistance;
+    });
+
+    // --------------------------------------------------------
+    // INITS & EVENT SETUP
+    // --------------------------------------------------------
+
+    // Wire-up controls and events on init
+    function init() {
+      // Dynamic listener on digit change selectors
+      lengthButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (isAnimating) return;
+          
+          lengthButtons.forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          
+          currentLength = parseInt(e.target.dataset.length, 10);
+          
+          // Reset template characters in display window to mirror current selected depth
+          pinDisplay.value = "-".repeat(currentLength);
+          
+          // Re-evaluate filter HUD metrics dynamically
+          updateActiveFiltersUI();
+          checkPINOverflow();
+        });
+      });
+
+      // Bind Main Operational buttons
+      generateBtn.addEventListener('click', startPINGeneration);
+      copyBtn.addEventListener('click', copyPINToClipboard);
+
+      // Privacy Modal operations
+      infoBtn.addEventListener('click', openModal);
+      modalCloseBtn.addEventListener('click', closeModal);
+      privacyModal.addEventListener('click', (e) => {
+        if (e.target === privacyModal) closeModal();
+      });
+
+      // Adjust positions on layout change
+      window.addEventListener('resize', checkPINOverflow);
+
+      // Warmup start configuration layout
+      updateActiveFiltersUI();
+      checkPINOverflow();
+    }
+
+    // Bootstrap run
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
