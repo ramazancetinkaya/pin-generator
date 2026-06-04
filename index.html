@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* CSS RESET */
+    /* CSS Reset and Variables */
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
@@ -54,7 +54,7 @@
       overflow-x: hidden;
     }
 
-    /* SCROLLBAR HIDER UTILITY */
+    /* Hide Scrollbar */
     .no-scrollbar {
       -ms-overflow-style: none;  /* IE and Edge */
       scrollbar-width: none;  /* Firefox */
@@ -63,7 +63,7 @@
       display: none; /* Chrome, Safari and Opera */
     }
 
-    /* MAIN CONTAINER SETUP (PERFECT CENTERING) */
+    /* Main Container Layout */
     main {
       flex: 1;
       display: flex;
@@ -83,7 +83,7 @@
       transition: var(--transition-smooth);
     }
 
-    /* TYPOGRAPHIC IDENTITY LOGO & INFO BUTTON */
+    /* Header Brand and Info */
     .header {
       display: flex;
       justify-content: space-between;
@@ -123,7 +123,7 @@
       color: var(--text-main);
     }
 
-    /* PIN DISPLAY CONTAINER */
+    /* PIN Viewport Container */
     .pin-viewport {
       position: relative;
       background-color: var(--accent-light);
@@ -142,7 +142,7 @@
       cursor: grabbing;
     }
 
-    /* MONOSPACED PIN TYPOGRAPHY (NO BOXES) */
+    /* Monospaced PIN Display */
     .pin-scroll-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -153,7 +153,7 @@
       scroll-behavior: smooth;
     }
 
-    /* When pin overflows, align left to make scrolling logical */
+    /* Shift alignment on overflow to keep scroll behavior logical */
     .pin-scroll-wrapper.overflowing {
       justify-content: flex-start;
     }
@@ -168,12 +168,16 @@
       background: transparent;
       outline: none;
       text-align: center;
-      width: 100%;
-      pointer-events: none; /* Prevent selection and focus visual breakups */
+      pointer-events: none; /* Prevents focus visual bugs */
       user-select: none;
+      min-width: 100%;
+      box-sizing: border-box;
+      padding: 0 0 0 0.15em; /* Add padding compensation for letter-spacing offset */
+      margin: 0;
+      flex-shrink: 0; /* Prevent flex-shrink to enable horizontal scroll */
     }
 
-    /* LENGTH SEGMENT SELECTOR */
+    /* Length Selection */
     .control-label {
       font-size: 0.75rem;
       font-weight: 700;
@@ -220,7 +224,7 @@
       box-shadow: var(--shadow-subtle);
     }
 
-    /* MAIN GENERATE & ACTION ROW */
+    /* Main Action Button Group */
     .action-row {
       display: flex;
       gap: 12px;
@@ -274,7 +278,7 @@
       border-color: var(--text-muted);
     }
 
-    /* ACTIVE BACKGROUND FILTERS SUMMARY AREA */
+    /* Background Security Filters HUD */
     .filters-summary-container {
       border-top: 1px dashed var(--border-color);
       padding-top: 16px;
@@ -304,7 +308,7 @@
       font-weight: 500;
     }
 
-    /* FOOTER REGION */
+    /* Footer Copyright Block */
     footer {
       width: 100%;
       text-align: center;
@@ -326,7 +330,7 @@
       text-decoration: underline;
     }
 
-    /* MODAL POPUPS */
+    /* Custom Info Modal Overlay */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -408,7 +412,7 @@
       background-color: var(--accent-hover);
     }
 
-    /* CUSTOM TOAST NOTIFICATIONS */
+    /* Custom Toast Notification System */
     .toast-container {
       position: fixed;
       top: 24px;
@@ -442,7 +446,7 @@
       opacity: 1;
     }
 
-    /* ANIMATIONS */
+    /* UI Animations */
     @keyframes pulse-shimmer {
       0% { opacity: 0.6; }
       50% { opacity: 1; }
@@ -462,7 +466,7 @@
       100% { transform: scale(1); }
     }
 
-    /* RESPONSIVE DESIGN ADJUSTMENTS */
+    /* Responsive Layout Rules */
     @media (max-width: 480px) {
       body {
         padding: 16px;
@@ -485,11 +489,11 @@
 </head>
 <body>
 
-  <!-- MAIN WRAPPER FOR HORIZONTAL AND VERTICAL VIEWPORT CENTERING -->
+  <!-- Main Center Container -->
   <main>
     <div class="generator-card">
       
-      <!-- LOGO / BRANDING & METADATA TRIGGER -->
+      <!-- Typography Header -->
       <div class="header">
         <h1 class="brand">myp1n</h1>
         <button class="info-trigger-btn" id="info-btn" aria-label="Privacy Information">
@@ -497,15 +501,15 @@
         </button>
       </div>
 
-      <!-- MAIN SCROLLABLE PIN DISPLAY WINDOW -->
+      <!-- PIN Scroll Wrapper -->
       <div class="pin-viewport" id="pin-viewport">
         <div class="pin-scroll-wrapper no-scrollbar" id="pin-scroll-container">
-          <!-- Styled read-only text input to facilitate touch drag/selection scroll mechanism -->
+          <!-- Monospaced input supporting drag/touch swipe -->
           <input type="text" id="pin-display" readonly value="------" aria-label="Generated PIN text">
         </div>
       </div>
 
-      <!-- PIN LENGTH CONTROLLER -->
+      <!-- Length Selection UI -->
       <label class="control-label">Select Digit Length</label>
       <div class="length-selector" role="radiogroup" aria-label="PIN digit length">
         <button class="length-btn" data-length="4">4</button>
@@ -517,7 +521,7 @@
         <button class="length-btn" data-length="16">16</button>
       </div>
 
-      <!-- INTERACT BUTTON BLOCK -->
+      <!-- Action Buttons -->
       <div class="action-row">
         <button class="generate-btn" id="generate-btn">
           <span>Generate PIN</span>
@@ -527,18 +531,18 @@
         </button>
       </div>
 
-      <!-- ACTIVE SECURITY FILTERS HUD DISPLAY (NO ICONS) -->
+      <!-- Security Filters Readout -->
       <div class="filters-summary-container">
         <div class="filters-title">Active Filters</div>
         <div class="filters-list" id="filters-container">
-          <!-- Rendered dynamically depending on length selector -->
+          <!-- Generated dynamically -->
         </div>
       </div>
 
     </div>
   </main>
 
-  <!-- POPUP PRIVACY OVERLAY (CUSTOM MODAL) -->
+  <!-- Privacy & Info Modal -->
   <div class="modal-overlay" id="privacy-modal">
     <div class="modal-container">
       <div class="modal-header">
@@ -552,21 +556,21 @@
     </div>
   </div>
 
-  <!-- CONTAINER FOR CUSTOM TOAST NOTIFICATIONS -->
+  <!-- Toast Container -->
   <div class="toast-container" id="toast-wrapper"></div>
 
-  <!-- COPYRIGHT REQUISITE FOOTER -->
+  <!-- Copyright Footer -->
   <footer>
     &copy; 2026 myp1n. Developed by <a href="https://github.com/ramazancetinkaya" target="_blank" rel="noopener noreferrer">ramazancetinkaya</a>.
   </footer>
 
-  <!-- CORE SCRIPT IMPLEMENTING THE CRYPTO API AND SECURITY FILTERS -->
+  <!-- Cryptographic Engine -->
   <script>
-    // State controller state variables
+    // Global state
     let currentLength = 6;
     let isAnimating = false;
 
-    // Dom Cache
+    // DOM elements
     const pinDisplay = document.getElementById('pin-display');
     const pinScrollContainer = document.getElementById('pin-scroll-container');
     const pinViewport = document.getElementById('pin-viewport');
@@ -579,7 +583,7 @@
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const toastWrapper = document.getElementById('toast-wrapper');
 
-    // High Resistance PIN Security Rule definitions
+    // Security filters
     const filterDefinitions = {
       global: [
         { id: "cs_rng", name: "Entropy Stream (CS-RNG)" },
@@ -598,17 +602,17 @@
     };
 
     // --------------------------------------------------------
-    // CRYPTOGRAPHIC GENERATION UTILITIES
+    // CRYPTOGRAPHIC RANDOM GENERATION
     // --------------------------------------------------------
     
-    // Generates mathematically secure single random digit using the secure Crypto API
+    // CS-RNG single digit generator
     function secureRandomDigit() {
       const buffer = new Uint32Array(1);
       window.crypto.getRandomValues(buffer);
       return buffer[0] % 10;
     }
 
-    // Modern Fisher-Yates element shuffling powered directly by Crypto API
+    // Fisher-Yates shuffle using Crypto API
     function cryptoShuffle(array) {
       const buffer = new Uint32Array(array.length);
       window.crypto.getRandomValues(buffer);
@@ -622,10 +626,10 @@
     }
 
     // --------------------------------------------------------
-    // SECURITY ALGORITHM VALIDATION & REGEX LAYERS
+    // SECURITY ALGORITHMS & PATTERN FILTERS
     // --------------------------------------------------------
 
-    // Standard checking against repeating numbers next to each other
+    // Block consecutive repeaters
     function hasConsecutiveDuplicates(pin) {
       for (let i = 0; i < pin.length - 1; i++) {
         if (pin[i] === pin[i + 1]) return true;
@@ -633,7 +637,7 @@
       return false;
     }
 
-    // Prevents mathematical sequences like 1234 or 9876
+    // Block linear sequences (e.g., 1234, 4321)
     function isLinearSequence(pin) {
       let asc = true;
       let desc = true;
@@ -646,21 +650,19 @@
       return asc || desc;
     }
 
-    // Limits repetitive counts of any digit (E.g. maximum of 3 occurrences of '4' inside a longer string)
+    // Block high frequency repeating digits
     function violatesFrequencyLimit(pin) {
       const counts = {};
       for (let char of pin) {
         counts[char] = (counts[char] || 0) + 1;
       }
-      // Max permitted threshold is around 25-30% of total length depending on pin sizes
       const maxPermitted = Math.max(2, Math.floor(pin.length * 0.3));
       return Object.values(counts).some(count => count > maxPermitted);
     }
 
-    // Rejects common repetitive sequences like "1212", "090909"
+    // Block repeating alternate patterns
     function hasPatternAlternation(pin) {
       if (pin.length < 4) return false;
-      // Rejects pattern groups repeating e.g. "abab" or "abcabc"
       if (pin.length % 2 === 0) {
         const half = pin.length / 2;
         if (pin.slice(0, half) === pin.slice(half)) return true;
@@ -669,7 +671,6 @@
         const quad = pin.length / 4;
         if (pin.slice(0, quad).repeat(4) === pin) return true;
       }
-      // Rejects alternating sets
       let alternating = true;
       for (let i = 2; i < pin.length; i++) {
         if (pin[i] !== pin[i - 2]) {
@@ -680,19 +681,19 @@
       return alternating;
     }
 
-    // Extra strict rules specifically for 4-digit PINs (since they have a much lower entropy space)
+    // Apply strict 4-digit rules
     function checkStrict4DigitFilters(pin) {
-      // 1. Check if it contains repeating digits (require all digits unique)
+      // Require all digits to be unique
       const uniqueDigits = new Set(pin);
       if (uniqueDigits.size !== 4) return true;
 
-      // 2. Reject tight distance gaps (no numbers separated by +/- 1 right next to each other)
+      // Require adjacent gap >= 2
       for (let i = 0; i < pin.length - 1; i++) {
         const gap = Math.abs(parseInt(pin[i], 10) - parseInt(pin[i + 1], 10));
         if (gap === 1) return true;
       }
 
-      // 3. Blacklist of historically known leaked/frequent 4-digit PIN patterns
+      // Reject compromised 4-digit PINs
       const darklist = [
         "1234", "1111", "0000", "1212", "7777", "2000", "2001", "2002", "2020", "2024", "2026", "2580",
         "4321", "9999", "5555", "6666", "2222", "3333", "8888", "4444", "6969", "1314", "1004"
@@ -702,7 +703,7 @@
       return false;
     }
 
-    // Main Engine Validator: Generates and evaluates PIN validity through the filter matrix
+    // Main secure generator logic
     function generateSecurePIN(length) {
       let attempts = 0;
       const MAX_ATTEMPTS_LIMIT = 5000;
@@ -711,33 +712,29 @@
         attempts++;
         let rawDigits = [];
         
-        // Assemble numbers
         for (let i = 0; i < length; i++) {
           rawDigits.push(secureRandomDigit());
         }
 
-        // Apply a secondary crypto-grade shuffle to disrupt sequential generation anomalies
         rawDigits = cryptoShuffle(rawDigits);
         const pinCandidate = rawDigits.join('');
 
-        // Apply Standard Base Filters
+        // Apply global filters
         if (hasConsecutiveDuplicates(pinCandidate)) continue;
         if (isLinearSequence(pinCandidate)) continue;
 
-        // Route based on dynamic target requirements
+        // Route specialized filters
         if (length === 4) {
           if (checkStrict4DigitFilters(pinCandidate)) continue;
         } else {
-          // Custom algorithms for 6 digits and greater
           if (violatesFrequencyLimit(pinCandidate)) continue;
           if (hasPatternAlternation(pinCandidate)) continue;
         }
 
-        // Secure PIN matches all algorithm filters
         return pinCandidate;
       }
 
-      // Safe fallback if loop hits bounds (extremely rare anomaly due to high mathematical space)
+      // Safe fallback generator
       let fallbackDigits = [];
       for (let i = 0; i < length; i++) {
         fallbackDigits.push(secureRandomDigit());
@@ -746,14 +743,20 @@
     }
 
     // --------------------------------------------------------
-    // UI CONTROL ENGINE
+    // USER INTERACTION & DISPLAY CONTROLS
     // --------------------------------------------------------
 
-    // Redraw and update the security system readout list (Active Filters UI)
+    // Adjust input width dynamically
+    function adjustInputWidth() {
+      const length = pinDisplay.value.length;
+      // Character size, spacing, and safety buffer
+      pinDisplay.style.width = `calc(${length}ch + ${length * 0.15}em + 1ch)`;
+    }
+
+    // Update HUD active filter badges
     function updateActiveFiltersUI() {
       filtersContainer.innerHTML = '';
       
-      // Load standard rules active globally
       filterDefinitions.global.forEach(filter => {
         const badge = document.createElement('span');
         badge.className = 'filter-badge';
@@ -761,7 +764,6 @@
         filtersContainer.appendChild(badge);
       });
 
-      // Load specific rules dependent on active configuration size
       if (currentLength === 4) {
         filterDefinitions.strict4.forEach(filter => {
           const badge = document.createElement('span');
@@ -779,12 +781,11 @@
       }
     }
 
-    // Triggers the tactical shuffle and verifies output
+    // Trigger rolling shuffle sequence
     function startPINGeneration() {
       if (isAnimating) return;
       isAnimating = true;
 
-      // Lock buttons during generation shuffle window
       generateBtn.disabled = true;
       copyBtn.disabled = true;
       pinDisplay.classList.add('shuffling');
@@ -794,20 +795,19 @@
       const animationDuration = 480; // ms
       let elapsed = 0;
 
-      // Creates the digital rolling shuffle cycle visual effect
       const animationInterval = setInterval(() => {
         let tempPIN = "";
         for (let i = 0; i < currentLength; i++) {
           tempPIN += Math.floor(Math.random() * 10);
         }
         pinDisplay.value = tempPIN;
+        adjustInputWidth();
         checkPINOverflow();
         elapsed += animationSpeed;
 
         if (elapsed >= animationDuration) {
           clearInterval(animationInterval);
           
-          // Complete shuffle, print clean output and scale animate
           pinDisplay.value = finalPIN;
           pinDisplay.classList.remove('shuffling');
           pinDisplay.classList.add('pin-pop');
@@ -816,22 +816,21 @@
             pinDisplay.classList.remove('pin-pop');
           }, 300);
 
-          // Restore normal interactions
           generateBtn.disabled = false;
           copyBtn.disabled = false;
           isAnimating = false;
+          adjustInputWidth();
           checkPINOverflow();
         }
       }, animationSpeed);
     }
 
-    // Copies PIN content to clipboard using fallback structures for sandbox compatibility
+    // Copy value to clipboard
     function copyPINToClipboard() {
       if (isAnimating) return;
       const targetValue = pinDisplay.value;
       if (!targetValue || targetValue.includes('-')) return;
 
-      // Safe DOM extraction mechanism
       const dummyInput = document.createElement('textarea');
       dummyInput.value = targetValue;
       document.body.appendChild(dummyInput);
@@ -847,19 +846,17 @@
       document.body.removeChild(dummyInput);
     }
 
-    // Displays feedback notifications utilizing custom HTML templates (no alerts)
+    // Trigger custom toast alert
     function showToast(message) {
       const toast = document.createElement('div');
       toast.className = 'toast';
       toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
       toastWrapper.appendChild(toast);
 
-      // Trigger frame transition entry
       setTimeout(() => {
         toast.classList.add('show');
       }, 50);
 
-      // Gracefully clear out element
       setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => {
@@ -868,7 +865,7 @@
       }, 2500);
     }
 
-    // Modal Display Handling
+    // Info modal controls
     function openModal() {
       privacyModal.classList.add('active');
     }
@@ -878,10 +875,10 @@
     }
 
     // --------------------------------------------------------
-    // HORIZONTAL OVERFLOW SCROLL NAVIGATION & TACTILE SWIPING
+    // GESTURE & OVERFLOW NAVIGATION
     // --------------------------------------------------------
 
-    // Monitors character bounds and structures alignment adjustments
+    // Check container overflow
     function checkPINOverflow() {
       const isOverflowing = pinScrollContainer.scrollWidth > pinScrollContainer.clientWidth;
       if (isOverflowing) {
@@ -891,7 +888,7 @@
       }
     }
 
-    // Listens to classic keys 'A' / 'D' / 'Arrows' to trigger smooth horizontal shifting inside container
+    // Keyboard navigation
     window.addEventListener('keydown', (e) => {
       if (isAnimating) return;
       
@@ -903,26 +900,26 @@
       }
     });
 
-    // Touch gesture dragging & standard pointer drag actions across the display box
+    // Drag & swipe gestures
     let activeDrag = false;
     let startLocationX;
     let originalScrollOffset;
 
     pinViewport.addEventListener('mousedown', (e) => {
       activeDrag = true;
+      pinViewport.style.cursor = 'grabbing';
       startLocationX = e.pageX - pinViewport.offsetLeft;
       originalScrollOffset = pinScrollContainer.scrollLeft;
     });
 
     window.addEventListener('mouseup', () => {
-      activeDrag = false;
+      if (activeDrag) {
+        activeDrag = false;
+        pinViewport.style.cursor = 'grab';
+      }
     });
 
-    window.addEventListener('mouseleave', () => {
-      activeDrag = false;
-    });
-
-    pinViewport.addEventListener('mousemove', (e) => {
+    window.addEventListener('mousemove', (e) => {
       if (!activeDrag) return;
       e.preventDefault();
       const currentX = e.pageX - pinViewport.offsetLeft;
@@ -930,31 +927,31 @@
       pinScrollContainer.scrollLeft = originalScrollOffset - dragDistance;
     });
 
-    // Touch Support Mobile mapping
+    // Mobile touch events
     pinViewport.addEventListener('touchstart', (e) => {
       activeDrag = true;
       startLocationX = e.touches[0].pageX - pinViewport.offsetLeft;
       originalScrollOffset = pinScrollContainer.scrollLeft;
     });
 
-    pinViewport.addEventListener('touchend', () => {
+    window.addEventListener('touchend', () => {
       activeDrag = false;
     });
 
     pinViewport.addEventListener('touchmove', (e) => {
       if (!activeDrag) return;
+      e.preventDefault(); // Prevent mobile scroll during swipe
       const currentX = e.touches[0].pageX - pinViewport.offsetLeft;
       const dragDistance = (currentX - startLocationX) * 1.5;
       pinScrollContainer.scrollLeft = originalScrollOffset - dragDistance;
-    });
+    }, { passive: false });
 
     // --------------------------------------------------------
-    // INITS & EVENT SETUP
+    // APPLICATION INITIALIZATION
     // --------------------------------------------------------
 
-    // Wire-up controls and events on init
     function init() {
-      // Dynamic listener on digit change selectors
+      // Hook select length buttons
       lengthButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
           if (isAnimating) return;
@@ -963,36 +960,38 @@
           e.target.classList.add('active');
           
           currentLength = parseInt(e.target.dataset.length, 10);
-          
-          // Reset template characters in display window to mirror current selected depth
           pinDisplay.value = "-".repeat(currentLength);
           
-          // Re-evaluate filter HUD metrics dynamically
+          adjustInputWidth();
           updateActiveFiltersUI();
           checkPINOverflow();
         });
       });
 
-      // Bind Main Operational buttons
+      // Action triggers
       generateBtn.addEventListener('click', startPINGeneration);
       copyBtn.addEventListener('click', copyPINToClipboard);
 
-      // Privacy Modal operations
+      // Info modal triggers
       infoBtn.addEventListener('click', openModal);
       modalCloseBtn.addEventListener('click', closeModal);
       privacyModal.addEventListener('click', (e) => {
         if (e.target === privacyModal) closeModal();
       });
 
-      // Adjust positions on layout change
-      window.addEventListener('resize', checkPINOverflow);
+      // Recalculate layout on resize
+      window.addEventListener('resize', () => {
+        adjustInputWidth();
+        checkPINOverflow();
+      });
 
-      // Warmup start configuration layout
+      // Initialize app layout
+      adjustInputWidth();
       updateActiveFiltersUI();
       checkPINOverflow();
     }
 
-    // Bootstrap run
+    // Bootstrap app
     document.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
