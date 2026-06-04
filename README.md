@@ -7,6 +7,12 @@
 
 myp1n is an offline, browser-based PIN generator. It uses the Web Cryptography API to ensure cryptographically secure randomness and applies strict structural filters to reject sequential, repeating, or easily guessable patterns.
 
+## Demo
+
+Experience the application instantly via GitHub Pages:
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-blue?style=for-the-badge)](https://ramazancetinkaya.github.io/pin-generator/)
+
 ## Security Model and Filters
 
 The application avoids predictable random number generators like Math.random() and instead uses window.crypto.getRandomValues(). Every generated PIN must pass specific validation filters before being displayed.
