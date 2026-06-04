@@ -1,7 +1,7 @@
 [![MIT License](https://img.shields.io/github/license/ramazancetinkaya/pin-generator?style=flat-square)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/ramazancetinkaya/pin-generator?style=flat-square)](https://github.com/ramazancetinkaya/pin-generator/issues)
-[![GitHub stars](https://img.shields.io/github/stars/ramazancetinkaya/pin-generator?style=flat-square)](https://github.com/ramazancetinkaya/pin-generator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/ramazancetinkaya/pin-generator?style=flat-square)](https://github.com/ramazancetinkaya/pin-generator/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/ramazancetinkaya/pin-generator)](https://github.com/ramazancetinkaya/pin-generator/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/ramazancetinkaya/pin-generator)](https://github.com/ramazancetinkaya/pin-generator/network)
 
 ## myp1n Secure PIN Generator
 
